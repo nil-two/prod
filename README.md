@@ -1,4 +1,4 @@
-perm
+prod
 ====
 
 Output direct product of lines of each files.
