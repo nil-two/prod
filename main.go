@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -57,44 +58,39 @@ func main() {
 		os.Exit(0)
 	}
 
-	var a [][]string
-	if flagset.NArg() < 1 {
-		a = append(a, make([]string, 0, 64))
-
-		b := bufio.NewScanner(os.Stdin)
-		for b.Scan() {
-			a[0] = append(a[0], b.Text())
-		}
-		if err := b.Err(); err != nil {
-			printErr(err)
-			os.Exit(1)
-		}
+	var rs []io.Reader
+	if flagset.NArg() == 0 {
+		rs = append(rs, os.Stdin)
 	} else {
-		for i, arg := range flagset.Args() {
-			a = append(a, make([]string, 0, 64))
-
+		for _, arg := range flagset.Args() {
 			f, err := os.Open(arg)
 			if err != nil {
 				printErr(err)
 				os.Exit(1)
 			}
 			defer f.Close()
-
-			b := bufio.NewScanner(f)
-			for b.Scan() {
-				a[i] = append(a[i], b.Text())
-			}
-			if err = b.Err(); err != nil {
-				printErr(err)
-				os.Exit(1)
-			}
+			rs = append(rs, f)
 		}
 	}
 
-	ss := make([]string, len(a))
-	for indexes := range Product(a) {
+	var aa [][]string
+	for _, r := range rs {
+		a := make([]string, 0, 64)
+		b := bufio.NewScanner(r)
+		for b.Scan() {
+			a = append(a, b.Text())
+		}
+		if err := b.Err(); err != nil {
+			printErr(err)
+			os.Exit(1)
+		}
+		aa = append(aa, a)
+	}
+
+	ss := make([]string, len(aa))
+	for indexes := range Product(aa) {
 		for i, index := range indexes {
-			ss[i] = a[i][index]
+			ss[i] = aa[i][index]
 		}
 		fmt.Println(strings.Join(ss, "\t"))
 	}
