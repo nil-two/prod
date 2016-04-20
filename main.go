@@ -16,6 +16,7 @@ var (
 	version = "0.0.0"
 
 	flagset   = pflag.NewFlagSet(name, pflag.ContinueOnError)
+	separator = flagset.StringP("separator", "s", "\t", "")
 	isHelp    = flagset.BoolP("help", "h", false, "")
 	isVersion = flagset.BoolP("version", "", false, "")
 )
@@ -26,6 +27,7 @@ Usage: %s [OPTION]... [FILE]...
 Output direct product of lines of each files.
 
 Options:
+  -s, --separator=STRING    use STRING to separate columns (default: \t)
       --help                display this help text and exit
       --version             display version information and exit
 `[1:], name)
@@ -93,7 +95,7 @@ func _main() int {
 		for i, index := range indexes {
 			ss[i] = aa[i][index]
 		}
-		fmt.Println(strings.Join(ss, "\t"))
+		fmt.Println(strings.Join(ss, *separator))
 	}
 	return 0
 }
