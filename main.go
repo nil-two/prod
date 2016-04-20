@@ -43,19 +43,19 @@ func guideToHelp() {
 	fmt.Fprintf(os.Stderr, "Try '%s --help' for more information.\n", name)
 }
 
-func main() {
+func _main() int {
 	flagset.SetOutput(ioutil.Discard)
 	if err := flagset.Parse(os.Args[1:]); err != nil {
 		printErr(err)
-		os.Exit(2)
+		return 2
 	}
 	if *isHelp {
 		printUsage()
-		os.Exit(0)
+		return 0
 	}
 	if *isVersion {
 		printVersion()
-		os.Exit(0)
+		return 0
 	}
 
 	var rs []io.Reader
@@ -66,7 +66,7 @@ func main() {
 			f, err := os.Open(arg)
 			if err != nil {
 				printErr(err)
-				os.Exit(1)
+				return 1
 			}
 			defer f.Close()
 			rs = append(rs, f)
@@ -82,7 +82,7 @@ func main() {
 		}
 		if err := b.Err(); err != nil {
 			printErr(err)
-			os.Exit(1)
+			return 1
 		}
 		aa = append(aa, a)
 	}
@@ -94,4 +94,10 @@ func main() {
 		}
 		fmt.Println(strings.Join(ss, "\t"))
 	}
+	return 0
+}
+
+func main() {
+	e := _main()
+	os.Exit(e)
 }
