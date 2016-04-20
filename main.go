@@ -67,7 +67,7 @@ func _main() int {
 			f, err := os.Open(arg)
 			if err != nil {
 				printErr(err)
-				return 1
+				return 2
 			}
 			defer f.Close()
 			rs = append(rs, f)
