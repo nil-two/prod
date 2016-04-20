@@ -47,6 +47,7 @@ func _main() int {
 	flagset.SetOutput(ioutil.Discard)
 	if err := flagset.Parse(os.Args[1:]); err != nil {
 		printErr(err)
+		guideToHelp()
 		return 2
 	}
 	if *isHelp {
