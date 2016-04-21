@@ -69,6 +69,7 @@ func _main() int {
 			f, err := os.Open(arg)
 			if err != nil {
 				printErr(err)
+				guideToHelp()
 				return 2
 			}
 			defer f.Close()
