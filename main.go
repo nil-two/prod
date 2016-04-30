@@ -93,8 +93,8 @@ func _main() int {
 
 	ss := make([]string, len(aa))
 	for indexes := range Product(aa) {
-		for i, index := range indexes {
-			ss[i] = aa[i][index]
+		for i, row := range indexes {
+			ss[i] = aa[i][row]
 		}
 		fmt.Println(strings.Join(ss, *separator))
 	}
