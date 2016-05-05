@@ -1,6 +1,8 @@
 prod
 ====
 
+[![Build Status](https://travis-ci.org/kusabashira/prod.svg?branch=master)](https://travis-ci.org/kusabashira/prod)
+
 Output direct product of lines of each files.
 
 ```
