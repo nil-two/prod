@@ -45,6 +45,17 @@ func guideToHelp() {
 	fmt.Fprintf(os.Stderr, "Try '%s --help' for more information.\n", name)
 }
 
+func do(w io.Writer, aa [][]string, separator string) error {
+	ss := make([]string, len(aa))
+	for indexes := range Product(aa) {
+		for i, row := range indexes {
+			ss[i] = aa[i][row]
+		}
+		fmt.Fprintln(w, strings.Join(ss, separator))
+	}
+	return nil
+}
+
 func _main() int {
 	flagset.SetOutput(ioutil.Discard)
 	if err := flagset.Parse(os.Args[1:]); err != nil {
@@ -91,12 +102,9 @@ func _main() int {
 		aa = append(aa, a)
 	}
 
-	ss := make([]string, len(aa))
-	for indexes := range Product(aa) {
-		for i, row := range indexes {
-			ss[i] = aa[i][row]
-		}
-		fmt.Println(strings.Join(ss, *separator))
+	if err := do(os.Stdout, aa, *separator); err != nil {
+		printErr(err)
+		return 1
 	}
 	return 0
 }
