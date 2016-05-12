@@ -65,6 +65,17 @@ $ prod --separator=, <(seq 0 1) <(seq 0 1) <(seq 0 1)
 1,1,1
 ```
 
+Other specification
+-------------------
+
+#### An empty file in `[FILE]...`
+
+If an empty file is included in `[FILE]...`, prod outputs nothing.
+
+```
+$ prod <(printf "%s\n" A B) /dev/null <(seq 7)
+```
+
 License
 -------
 
