@@ -45,6 +45,18 @@ func guideToHelp() {
 	fmt.Fprintf(os.Stderr, "Try '%s --help' for more information.\n", name)
 }
 
+func toLines(r io.Reader) ([]string, error) {
+	a := make([]string, 0, 64)
+	b := bufio.NewScanner(r)
+	for b.Scan() {
+		a = append(a, b.Text())
+	}
+	if err := b.Err(); err != nil {
+		return nil, err
+	}
+	return a, nil
+}
+
 func do(w io.Writer, aa [][]string, separator string) error {
 	ss := make([]string, len(aa))
 	for indexes := range Product(aa) {
@@ -90,12 +102,8 @@ func _main() int {
 
 	var aa [][]string
 	for _, r := range rs {
-		a := make([]string, 0, 64)
-		b := bufio.NewScanner(r)
-		for b.Scan() {
-			a = append(a, b.Text())
-		}
-		if err := b.Err(); err != nil {
+		a, err := toLines(r)
+		if err != nil {
 			printErr(err)
 			return 1
 		}
