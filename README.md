@@ -37,7 +37,7 @@ Display the usage and exit.
 
 ### --version
 
-Output the version of ltsvp and exit.
+Output the version of prod and exit.
 
 ### -s, --separator=STRING
 
