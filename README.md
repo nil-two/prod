@@ -33,11 +33,11 @@ Options
 
 ### --help
 
-Display the usage and exit.
+Display a help message.
 
 ### --version
 
-Output the version of prod and exit.
+Output the version of prod.
 
 ### -s, --separator=STRING
 
