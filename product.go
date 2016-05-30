@@ -25,7 +25,6 @@ func (p *Productor) findProduct(index_i int) {
 		p.sendProduct()
 		return
 	}
-
 	for i := 0; i < len(p.items[index_i]); i++ {
 		p.indexes[index_i] = i
 		p.findProduct(index_i + 1)
