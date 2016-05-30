@@ -14,11 +14,15 @@ func NewProductor(items [][]string, ch chan []int) *Productor {
 	}
 }
 
+func (p *Productor) sendProduct() {
+	indexes := make([]int, len(p.indexes))
+	copy(indexes, p.indexes)
+	p.ch <- indexes
+}
+
 func (p *Productor) findProduct(index_i int) {
 	if index_i == len(p.items) {
-		indexes := make([]int, len(p.indexes))
-		copy(indexes, p.indexes)
-		p.ch <- indexes
+		p.sendProduct()
 		return
 	}
 
