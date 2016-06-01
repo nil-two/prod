@@ -12,6 +12,14 @@ var productTests = []struct {
 	{
 		src: [][]string{
 			{"a", "b", "c"},
+			{},
+			{"1", "2"},
+		},
+		dst: [][]int{},
+	},
+	{
+		src: [][]string{
+			{"a", "b", "c"},
 		},
 		dst: [][]int{
 			{0},
