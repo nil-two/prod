@@ -12,8 +12,8 @@ import (
 )
 
 var (
-	cmdName = "prod"
-	version = "0.1.0"
+	cmdName    = "prod"
+	cmdVersion = "0.1.0"
 
 	flagset   = pflag.NewFlagSet(cmdName, pflag.ContinueOnError)
 	separator = flagset.StringP("separator", "s", "\t", "")
@@ -34,7 +34,7 @@ Options:
 }
 
 func printVersion() {
-	fmt.Fprintf(os.Stderr, "%s\n", version)
+	fmt.Fprintf(os.Stderr, "%s\n", cmdVersion)
 }
 
 func printErr(err interface{}) {
