@@ -12,10 +12,10 @@ import (
 )
 
 var (
-	name    = "prod"
+	cmdName = "prod"
 	version = "0.1.0"
 
-	flagset   = pflag.NewFlagSet(name, pflag.ContinueOnError)
+	flagset   = pflag.NewFlagSet(cmdName, pflag.ContinueOnError)
 	separator = flagset.StringP("separator", "s", "\t", "")
 	isHelp    = flagset.BoolP("help", "h", false, "")
 	isVersion = flagset.BoolP("version", "", false, "")
@@ -30,7 +30,7 @@ Options:
   -s, --separator=STRING   use STRING to separate columns (default: \t)
       --help               display this help text and exit
       --version            display version information and exit
-`[1:], name)
+`[1:], cmdName)
 }
 
 func printVersion() {
@@ -38,11 +38,11 @@ func printVersion() {
 }
 
 func printErr(err interface{}) {
-	fmt.Fprintf(os.Stderr, "%s: %s\n", name, err)
+	fmt.Fprintf(os.Stderr, "%s: %s\n", cmdName, err)
 }
 
 func guideToHelp() {
-	fmt.Fprintf(os.Stderr, "Try '%s --help' for more information.\n", name)
+	fmt.Fprintf(os.Stderr, "Try '%s --help' for more information.\n", cmdName)
 }
 
 func toLines(r io.Reader) ([]string, error) {
