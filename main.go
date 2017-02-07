@@ -105,14 +105,17 @@ func (c *CLI) do(rs []io.Reader) error {
 		aa = append(aa, a)
 	}
 
+	bw := bufio.NewWriter(c.stdout)
 	columns := make([]string, len(aa))
 	for indexes := range Product(aa) {
 		for i, row := range indexes {
 			columns[i] = aa[i][row]
 		}
-		fmt.Fprintln(c.stdout, strings.Join(columns, c.separator))
+		if _, err := bw.WriteString(strings.Join(columns, c.separator) + "\n"); err != nil {
+			return err
+		}
 	}
-	return nil
+	return bw.Flush()
 }
 
 func (c *CLI) Run(args []string) int {
