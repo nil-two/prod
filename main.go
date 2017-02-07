@@ -14,15 +14,28 @@ import (
 var (
 	cmdName    = "prod"
 	cmdVersion = "0.1.0"
-
-	flagset   = pflag.NewFlagSet(cmdName, pflag.ContinueOnError)
-	separator = flagset.StringP("separator", "s", "\t", "")
-	isHelp    = flagset.BoolP("help", "h", false, "")
-	isVersion = flagset.BoolP("version", "", false, "")
 )
 
-func printUsage() {
-	fmt.Fprintf(os.Stderr, `
+type CLI struct {
+	stdin  io.Reader
+	stdout io.Writer
+	stderr io.Writer
+
+	separator string
+	isHelp    bool
+	isVersion bool
+}
+
+func NewCLI(stdin io.Reader, stdout io.Writer, stderr io.Writer) *CLI {
+	return &CLI{
+		stdin:  stdin,
+		stdout: stdout,
+		stderr: stderr,
+	}
+}
+
+func (c *CLI) printUsage() {
+	fmt.Fprintf(c.stderr, `
 Usage: %s [OPTION]... [FILE]...
 Output direct product of lines of each files.
 
@@ -33,91 +46,107 @@ Options:
 `[1:], cmdName)
 }
 
-func printVersion() {
-	fmt.Fprintf(os.Stderr, "%s\n", cmdVersion)
+func (c *CLI) printVersion() {
+	fmt.Fprintf(c.stderr, "%s\n", cmdVersion)
 }
 
-func printErr(err interface{}) {
-	fmt.Fprintf(os.Stderr, "%s: %s\n", cmdName, err)
+func (c *CLI) printErr(err interface{}) {
+	fmt.Fprintf(c.stderr, "%s: %s\n", cmdName, err)
 }
 
-func guideToHelp() {
-	fmt.Fprintf(os.Stderr, "Try '%s --help' for more information.\n", cmdName)
+func (c *CLI) guideToHelp() {
+	fmt.Fprintf(c.stderr, "Try '%s --help' for more information.\n", cmdName)
 }
 
-func toLines(r io.Reader) ([]string, error) {
-	a := make([]string, 0, 64)
-	b := bufio.NewScanner(r)
-	for b.Scan() {
-		a = append(a, b.Text())
-	}
-	if err := b.Err(); err != nil {
+func (c *CLI) parseOptions(args []string) (argFiles []string, err error) {
+	flagset := pflag.NewFlagSet(cmdName, pflag.ContinueOnError)
+	flagset.SetOutput(ioutil.Discard)
+
+	flagset.StringVarP(&c.separator, "separator", "s", "\t", "")
+	flagset.BoolVarP(&c.isHelp, "help", "h", false, "")
+	flagset.BoolVarP(&c.isVersion, "version", "", false, "")
+
+	if err := flagset.Parse(args); err != nil {
 		return nil, err
 	}
-	return a, nil
+	return flagset.Args(), nil
 }
 
-func do(w io.Writer, aa [][]string, separator string) error {
-	ss := make([]string, len(aa))
+func (c *CLI) newArgfAsList(argFiles []string) (r []io.Reader, err error) {
+	switch len(argFiles) {
+	case 0:
+		return []io.Reader{c.stdin}, nil
+	default:
+		rs := make([]io.Reader, len(argFiles))
+		for i, argFile := range argFiles {
+			f, err := os.Open(argFile)
+			if err != nil {
+				return nil, err
+			}
+			rs[i] = f
+		}
+		return rs, nil
+	}
+}
+
+func (c *CLI) do(rs []io.Reader) error {
+	var aa [][]string
+	for _, r := range rs {
+		var a []string
+
+		bs := bufio.NewScanner(r)
+		for bs.Scan() {
+			a = append(a, bs.Text())
+		}
+		if err := bs.Err(); err != nil {
+			return err
+		}
+
+		aa = append(aa, a)
+	}
+
+	columns := make([]string, len(aa))
 	for indexes := range Product(aa) {
 		for i, row := range indexes {
-			ss[i] = aa[i][row]
+			columns[i] = aa[i][row]
 		}
-		fmt.Fprintln(w, strings.Join(ss, separator))
+		fmt.Fprintln(c.stdout, strings.Join(columns, c.separator))
 	}
 	return nil
 }
 
-func _main() int {
-	flagset.SetOutput(ioutil.Discard)
-	if err := flagset.Parse(os.Args[1:]); err != nil {
-		printErr(err)
-		guideToHelp()
+func (c *CLI) Run(args []string) int {
+	argFiles, err := c.parseOptions(args)
+	if err != nil {
+		c.printErr(err)
+		c.guideToHelp()
 		return 2
 	}
-	if *isHelp {
-		printUsage()
+	if c.isHelp {
+		c.printUsage()
 		return 0
 	}
-	if *isVersion {
-		printVersion()
+	if c.isVersion {
+		c.printVersion()
 		return 0
 	}
 
-	var rs []io.Reader
-	if flagset.NArg() == 0 {
-		rs = append(rs, os.Stdin)
-	} else {
-		for _, arg := range flagset.Args() {
-			f, err := os.Open(arg)
-			if err != nil {
-				printErr(err)
-				guideToHelp()
-				return 2
-			}
-			defer f.Close()
-			rs = append(rs, f)
-		}
+	rs, err := c.newArgfAsList(argFiles)
+	if err != nil {
+		c.printErr(err)
+		c.guideToHelp()
+		return 2
 	}
 
-	var aa [][]string
-	for _, r := range rs {
-		a, err := toLines(r)
-		if err != nil {
-			printErr(err)
-			return 1
-		}
-		aa = append(aa, a)
-	}
-
-	if err := do(os.Stdout, aa, *separator); err != nil {
-		printErr(err)
+	if err = c.do(rs); err != nil {
+		c.printErr(err)
 		return 1
 	}
 	return 0
 }
 
 func main() {
-	e := _main()
+	c := NewCLI(os.Stdin, os.Stdout, os.Stderr)
+	e := c.Run(os.Args[1:])
 	os.Exit(e)
 }
